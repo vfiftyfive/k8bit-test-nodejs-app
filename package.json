@@ -1,0 +1,16 @@
+{
+  "name": "k8bit-test-nodejs-app",
+  "version": "1.0.0",
+  "description": "Simple Node.js app for testing K8-Bit ScaleOps integration",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "express": "^4.18.2"
+  },
+  "keywords": ["nodejs", "express", "k8bit", "scaleops"],
+  "author": "K8-Bit Team",
+  "license": "MIT"
+}
