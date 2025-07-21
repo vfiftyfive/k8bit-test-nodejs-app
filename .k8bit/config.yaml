@@ -1,0 +1,230 @@
+apiVersion: k8bit.io/v1alpha1
+kind: Config
+metadata:
+  name: k8bit-test-nodejs-app
+  labels:
+    app: k8bit-test-nodejs-app
+    environment: production
+    managed-by: k8bit
+
+# Application configuration
+application:
+  name: k8bit-test-nodejs-app
+  type: nodejs
+  framework: express
+  version: "1.0.0"
+  
+# Environment settings
+environment:
+  name: production
+  namespace: production
+  cluster: scaleops-labs
+  
+# Workload configuration
+workload:
+  type: nodejs
+  category: web-service
+  tier: frontend
+  
+# Scaling configuration
+scaling:
+  enabled: true
+  
+  # HPA settings
+  hpa:
+    enabled: true
+    minReplicas: 2
+    maxReplicas: 15
+    targetCpuUtilization: 70
+    targetMemoryUtilization: 80
+    
+  # ScaleOps integration
+  scaleops:
+    enabled: true
+    policy: nodejs-web-app-policy
+    coldStartProtocol: true
+    optimizationLevel: "aggressive"
+    
+  # Scaling behavior
+  behavior:
+    scaleUp:
+      stabilizationWindow: 60s
+      maxPercentIncrease: 100
+      maxPodsPerScale: 4
+    scaleDown:
+      stabilizationWindow: 300s
+      maxPercentDecrease: 50
+      maxPodsPerScale: 2
+
+# Resource configuration
+resources:
+  # Default resource requests/limits (can be overridden by ScaleOps)
+  requests:
+    cpu: "100m"
+    memory: "256Mi"
+  limits:
+    cpu: "500m"
+    memory: "512Mi"
+    
+  # Resource optimization
+  optimization:
+    enabled: true
+    continuous: true
+    interval: "1h"
+    
+# Health check configuration
+health:
+  liveness:
+    path: "/health"
+    port: 3000
+    initialDelay: 30s
+    period: 10s
+    timeout: 5s
+    failureThreshold: 3
+    
+  readiness:
+    path: "/health"
+    port: 3000
+    initialDelay: 5s
+    period: 5s
+    timeout: 3s
+    failureThreshold: 2
+
+# Monitoring and observability
+monitoring:
+  enabled: true
+  metrics:
+    # Enable Node.js specific metrics
+    nodejs: true
+    # Monitor event loop lag
+    eventLoopLag: true
+    # Custom metrics endpoint
+    endpoint: "/metrics"
+    port: 3000
+    
+  # Logging configuration
+  logging:
+    level: "info"
+    format: "json"
+    # Enable structured logging
+    structured: true
+    
+  # Tracing configuration
+  tracing:
+    enabled: false
+    jaeger: false
+    
+# Deployment configuration
+deployment:
+  # Deployment strategy
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 1
+      maxSurge: 2
+      
+  # Container settings
+  container:
+    port: 3000
+    image: "gcr.io/scaleops-dev-rel/k8bit-test-nodejs-app"
+    tag: "latest"
+    pullPolicy: "Always"
+    
+  # Security settings
+  security:
+    runAsNonRoot: true
+    readOnlyRootFilesystem: false
+    allowPrivilegeEscalation: false
+    
+# Network configuration
+network:
+  service:
+    type: ClusterIP
+    port: 80
+    targetPort: 3000
+    
+  # Ingress settings (if needed)
+  ingress:
+    enabled: false
+    
+# Environment variables
+env:
+  # Configuration from ConfigMap
+  configMap:
+    - name: k8bit-test-nodejs-app-config
+      keys:
+        - NODE_ENV
+        - PORT
+        - LOG_LEVEL
+        
+  # Secrets (if needed)
+  secrets: []
+  
+  # Direct environment variables
+  variables:
+    NODE_ENV: production
+    PORT: "3000"
+    LOG_LEVEL: info
+
+# ScaleOps Cold Start Protocol configuration
+coldStartProtocol:
+  enabled: true
+  
+  # Initial resource estimates for cold start
+  initialResources:
+    cpu:
+      request: "100m"
+      limit: "500m"
+    memory:
+      request: "256Mi"
+      limit: "512Mi"
+      
+  # Learning period for data collection
+  learningPeriod: "7d"
+  
+  # Optimization triggers
+  optimization:
+    # Trigger optimization after sufficient data collection
+    dataThreshold: "24h"
+    # Minimum confidence level for recommendations
+    confidenceLevel: 0.8
+    
+  # Fallback settings
+  fallback:
+    # Use conservative defaults if no data available
+    conservative: true
+    # Baseline resource multiplier
+    resourceMultiplier: 1.2
+
+# Cost optimization
+cost:
+  optimization: true
+  
+  # Resource right-sizing
+  rightSizing:
+    enabled: true
+    continuous: true
+    
+  # Scheduling preferences
+  scheduling:
+    costOptimized: true
+    spotInstances: false
+    nodeAffinity: []
+
+# Quality of Service
+qos:
+  class: "Burstable"
+  
+  # SLA requirements
+  sla:
+    availability: "99.9%"
+    responseTime: "200ms"
+    errorRate: "1%"
+    
+  # Performance targets
+  performance:
+    throughput: "1000 rps"
+    latency:
+      p50: "50ms"
+      p95: "150ms"
+      p99: "300ms"
